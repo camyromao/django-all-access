@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import binascii
 import hmac
+import hashlib
 
 from django.conf import settings
 from django.db import models
@@ -32,7 +33,7 @@ class SignedAESEncryption(object):
         return force_bytes(settings.SECRET_KEY.zfill(32))[:32]
 
     def get_signature(self, value):
-        return force_bytes(hmac.new(self.get_key(), value).hexdigest())
+        return force_bytes(hmac.new(self.get_key(), value, digestmod=hashlib.md5).hexdigest())
 
     def get_padding(self, value):
         # We always want at least 2 chars of padding (including zero byte),
@@ -93,7 +94,7 @@ class EncryptedField(models.TextField):
         self.cipher = self.encryption_class()
         super(EncryptedField, self).__init__(*args, **kwargs)
 
-    def from_db_value(self, value, expression, connection, context):
+    def from_db_value(self, value, expression, connection):
         if value is None:
             return value
         value = force_bytes(value)

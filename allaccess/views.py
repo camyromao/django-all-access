@@ -7,7 +7,7 @@ import logging
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, get_user_model
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import Http404
 from django.shortcuts import redirect
 from django.utils.encoding import smart_bytes, force_text
@@ -166,5 +166,5 @@ class OAuthCallback(OAuthClientMixin, View):
         access.user = user
         AccountAccess.objects.filter(pk=access.pk).update(user=user)
         user = authenticate(provider=access.provider, identifier=access.identifier)
-        login(self.request, user)
+        login(self.request, user, backend='allaccess.backends.AuthorizedServiceBackend')
         return redirect(self.get_login_redirect(provider, user, access, True))
